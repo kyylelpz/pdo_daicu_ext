@@ -3,7 +3,7 @@
   min-height: 48px;
   border: 0;
   border-radius: 8px;
-  background: #1f6f63;
+  background: #1e2d4f;
   color: #ffffff;
   cursor: pointer;
   font: 700 0.95rem/1.2 var(--font-sans);
@@ -14,18 +14,18 @@
 }
 
 .button:hover:not(:disabled) {
-  background: #19594f;
-  box-shadow: 0 10px 24px rgba(31, 111, 99, 0.2);
+  background: #2c426f;
+  box-shadow: 0 10px 24px rgba(30, 45, 79, 0.24);
   transform: translateY(-1px);
 }
 
 .button:focus-visible {
-  outline: 3px solid rgba(31, 111, 99, 0.28);
+  outline: 3px solid rgba(30, 45, 79, 0.28);
   outline-offset: 3px;
 }
 
 .button:disabled {
-  background: #9ca9a6;
+  background: #9ca3af;
   cursor: not-allowed;
   transform: none;
 }

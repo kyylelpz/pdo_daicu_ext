@@ -24,7 +24,7 @@ const ContactPreview = ({ form }: ContactPreviewProps) => {
         </div>
       </dl>
 
-      <p className="preview-note">This is how your message will be reviewed before we reply.</p>
+      <p className="preview-note">This is how your message will appear to our team.</p>
     </aside>
   );
 };

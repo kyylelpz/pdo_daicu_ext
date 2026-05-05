@@ -31,7 +31,7 @@ const ContactForm = ({
           id="name"
           maxLength={80}
           name="name"
-          placeholder="Jane Doe"
+          placeholder="Kyle Lemuel Lopez"
           required
           type="text"
           value={form.name}
@@ -53,7 +53,7 @@ const ContactForm = ({
           id="email"
           maxLength={254}
           name="email"
-          placeholder="jane@example.com"
+          placeholder="lopez.kyle922@gmail.com"
           required
           type="email"
           value={form.email}
@@ -87,7 +87,7 @@ const ContactForm = ({
           ) : (
             <span> </span>
           )}
-          <span>{form.message.length}/2000</span>
+          <span>{form.message.length}/1000</span>
         </div>
       </div>
 

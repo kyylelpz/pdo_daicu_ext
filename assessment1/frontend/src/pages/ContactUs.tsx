@@ -29,8 +29,8 @@ const validateForm = (form: ContactFormData): ContactFormErrors => {
 
   if (!message) {
     errors.message = "Message is required.";
-  } else if (message.length > 2000) {
-    errors.message = "Message must be 2000 characters or fewer.";
+  } else if (message.length > 1000) {
+    errors.message = "Message must be 1000 characters or fewer.";
   }
 
   return errors;
@@ -131,7 +131,7 @@ const ContactUs = () => {
         <div className="contact-panel">
           <h1>Contact Us</h1>
           <p className="contact-intro">
-            Send a secure message and preview it before it reaches our team.
+            Send us a message and we'll get back to you as soon as possible.
           </p>
 
           <ContactForm
