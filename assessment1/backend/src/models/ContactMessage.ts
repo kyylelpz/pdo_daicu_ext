@@ -1,15 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-export interface IContactMessage extends Document {
-  name: string;
-  email: string;
-  message: string;
-  status: "pending" | "sent" | "failed";
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const ContactMessageSchema = new Schema<IContactMessage>(
+const ContactMessageSchema = new Schema(
   {
     name: {
       type: String,
@@ -33,12 +24,9 @@ const ContactMessageSchema = new Schema<IContactMessage>(
       default: "pending",
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-export default mongoose.model<IContactMessage>(
-  "ContactMessage",
-  ContactMessageSchema
-);
+const ContactMessage = mongoose.model("ContactMessage", ContactMessageSchema);
+
+export default ContactMessage;

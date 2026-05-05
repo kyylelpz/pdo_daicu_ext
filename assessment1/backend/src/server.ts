@@ -1,10 +1,10 @@
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import { connectDB } from "./config/db";
 import contactRoutes from "./routes/contact.routes";
 
-dotenv.config();
+dotenv.config({ path: ".env" });
 
 const app = express();
 
