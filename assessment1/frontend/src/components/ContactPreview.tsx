@@ -6,23 +6,26 @@ type ContactPreviewProps = {
 
 const ContactPreview = ({ form }: ContactPreviewProps) => {
   return (
-    <div className="contact-preview">
-      <h3>Live Preview</h3>
+    <aside className="contact-preview" aria-label="Message preview">
+      <div className="preview-header">
+        <span>Live Preview</span>
+        <strong>{form.name || "Your name"}</strong>
+      </div>
 
-      <p>
-        <strong>Name:</strong> {form.name || "Your name"}
-      </p>
+      <dl>
+        <div>
+          <dt>Email</dt>
+          <dd>{form.email || "your@email.com"}</dd>
+        </div>
 
-      <p>
-        <strong>Email:</strong> {form.email || "your@email.com"}
-      </p>
+        <div>
+          <dt>Message</dt>
+          <dd>{form.message || "Your message will appear here..."}</dd>
+        </div>
+      </dl>
 
-      <p>
-        <strong>Message:</strong>
-      </p>
-
-      <p>{form.message || "Your message will appear here..."}</p>
-    </div>
+      <p className="preview-note">This is how your message will be reviewed before we reply.</p>
+    </aside>
   );
 };
 

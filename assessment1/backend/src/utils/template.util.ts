@@ -5,8 +5,16 @@ export const renderTemplate = (
   let output = template;
 
   for (const key in data) {
-    output = output.replace(new RegExp(`{{${key}}}`, "g"), data[key]);
+    output = output.replace(new RegExp(`{{${key}}}`, "g"), escapeHtml(data[key]));
   }
 
   return output;
 };
+
+export const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");

@@ -1,8 +1,11 @@
-import type { ContactFormData } from "../types/contact";
+import type { ContactFormData, ContactResponse } from "../types/contact";
 
-const API_URL = "http://localhost:5000/api/contact";
+const API_URL =
+  import.meta.env.VITE_CONTACT_API_URL ?? "http://localhost:5000/api/contact";
 
-export const submitContactMessage = async (form: ContactFormData) => {
+export const submitContactMessage = async (
+  form: ContactFormData
+): Promise<ContactResponse> => {
   const response = await fetch(API_URL, {
     method: "POST",
     headers: {
@@ -14,7 +17,9 @@ export const submitContactMessage = async (form: ContactFormData) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "Failed to submit message");
+    const error = new Error(data.message || "Failed to submit message");
+    Object.assign(error, { response: data });
+    throw error;
   }
 
   return data;

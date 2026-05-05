@@ -3,18 +3,33 @@ import ContactMessage from "../models/ContactMessage";
 import { sendEmail } from "../services/mail.service";
 import EmailTemplate from "../models/EmailTemplate";
 import { renderTemplate } from "../utils/template.util";
+import { contactRateLimiter } from "../middleware/rateLimit.middleware";
+import {
+  isValidEmail,
+  validateContactInput,
+} from "../utils/contactValidation.util";
 
 const router = Router();
 
-router.post("/", async (req, res) => {
-  try {
-    const { name, email, message } = req.body;
+router.post("/", contactRateLimiter(), async (req, res) => {
+  let contactMessageId: string | undefined;
 
-    if (!name || !email || !message) {
+  try {
+    const validation = validateContactInput(req.body);
+
+    if (!validation.isValid) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and message are required.",
+        message: "Please correct the highlighted fields.",
+        errors: validation.errors,
       });
+    }
+
+    const { name, email, message } = validation.data;
+    const mailTo = process.env.MAIL_TO?.trim();
+
+    if (!mailTo || !isValidEmail(mailTo)) {
+      throw new Error("MAIL_TO is missing or invalid in .env");
     }
 
     const contactMessage = await ContactMessage.create({
@@ -23,6 +38,7 @@ router.post("/", async (req, res) => {
       message,
       status: "pending",
     });
+    contactMessageId = contactMessage._id.toString();
 
     const template = await EmailTemplate.findOne({ isActive: true });
 
@@ -36,10 +52,11 @@ router.post("/", async (req, res) => {
       message,
     });
 
-    await sendEmail(process.env.MAIL_TO!, template.subject, html);
+    await sendEmail(mailTo, template.subject, html);
 
     await ContactMessage.findByIdAndUpdate(contactMessage._id, {
       status: "sent",
+      failureReason: null,
     });
 
     const updatedMessage = await ContactMessage.findById(contactMessage._id);
@@ -52,10 +69,16 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error("Contact form error:", error);
 
+    if (contactMessageId) {
+      await ContactMessage.findByIdAndUpdate(contactMessageId, {
+        status: "failed",
+        failureReason: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Server error while saving contact message or sending email.",
-      error: error instanceof Error ? error.message : error,
     });
   }
 });

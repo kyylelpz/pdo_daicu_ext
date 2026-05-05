@@ -23,6 +23,11 @@ const ContactMessageSchema = new Schema(
       enum: ["pending", "sent", "failed"],
       default: "pending",
     },
+    failureReason: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
   { timestamps: true }
 );
