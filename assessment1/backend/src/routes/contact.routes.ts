@@ -81,10 +81,17 @@ router.post("/", contactRateLimiter(), async (req, res) => {
 
     const { name, email, message } = validation.data;
     const mailTo = process.env.MAIL_TO?.trim();
+    const mailRecipients = mailTo
+      ?.split(",")
+      .map((recipient) => recipient.trim())
+      .filter(Boolean);
     const submittedAt = new Date();
     const submittedAtLabel = formatSubmittedAt(submittedAt);
 
-    if (!mailTo || !isValidEmail(mailTo)) {
+    if (
+      !mailRecipients?.length ||
+      mailRecipients.some((recipient) => !isValidEmail(recipient))
+    ) {
       throw new Error("MAIL_TO is missing or invalid in .env");
     }
 
@@ -118,7 +125,7 @@ router.post("/", contactRateLimiter(), async (req, res) => {
       submittedAt: submittedAtLabel,
     });
 
-    await sendEmail(mailTo, subject, html);
+    await sendEmail(mailRecipients.join(","), subject, html);
 
     await ContactMessage.findByIdAndUpdate(contactMessage._id, {
       status: "sent",
