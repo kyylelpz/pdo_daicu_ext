@@ -1,12 +1,14 @@
 import type { ContactFormData, ContactResponse } from "../types/contact";
 
-const API_URL =
-  import.meta.env.VITE_CONTACT_API_URL ?? "http://localhost:5000/api/contact";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api";
+const buildApiUrl = (path: string) =>
+  `${API_BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 
 export const submitContactMessage = async (
   form: ContactFormData
 ): Promise<ContactResponse> => {
-  const response = await fetch(API_URL, {
+  const response = await fetch(buildApiUrl("/contact"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
