@@ -18,7 +18,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIMITS = {
   name: 80,
   email: 254,
-  message: 2000,
+  message: 1000,
 };
 
 const normalizeValue = (value: unknown) =>

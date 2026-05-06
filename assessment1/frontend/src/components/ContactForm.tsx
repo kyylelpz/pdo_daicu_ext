@@ -72,7 +72,7 @@ const ContactForm = ({
           aria-describedby={errors.message ? "message-error" : undefined}
           aria-invalid={Boolean(errors.message)}
           id="message"
-          maxLength={2000}
+          maxLength={1000}
           name="message"
           placeholder="How can we help?"
           required

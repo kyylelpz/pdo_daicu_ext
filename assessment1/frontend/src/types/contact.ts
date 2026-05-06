@@ -10,4 +10,9 @@ export type ContactResponse = {
   success: boolean;
   message?: string;
   errors?: ContactFormErrors;
+  data?: {
+    referenceNumber?: string;
+    submittedAt?: string;
+    status?: string;
+  };
 };

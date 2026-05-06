@@ -127,31 +127,37 @@ const ContactUs = () => {
 
   return (
     <main className="contact-page">
-      <section className="contact-shell">
-        <div className="contact-panel">
-          <h1>Contact Us</h1>
-          <p className="contact-intro">
-            Send us a message and we'll get back to you as soon as possible.
-          </p>
-
-          <ContactForm
-            errors={errors}
-            form={form}
-            isValid={isValid}
-            loading={loading}
-            onChange={handleChange}
-            onSubmit={handleSubmit}
-          />
-
-          {feedback && (
-            <p className={`feedback feedback-${feedback.type}`} role="status">
-              {feedback.message}
+      <div className="contact-layout">
+        <section className="contact-shell">
+          <div className="contact-panel">
+            <h1>Contact Us</h1>
+            <p className="contact-intro">
+              Send us a message and we'll get back to you as soon as possible.
             </p>
-          )}
-        </div>
 
-        <ContactPreview form={form} />
-      </section>
+            <ContactForm
+              errors={errors}
+              form={form}
+              isValid={isValid}
+              loading={loading}
+              onChange={handleChange}
+              onSubmit={handleSubmit}
+            />
+
+            {feedback && (
+              <p className={`feedback feedback-${feedback.type}`} role="status">
+                {feedback.message}
+              </p>
+            )}
+          </div>
+
+          <ContactPreview form={form} />
+        </section>
+
+        <footer className="contact-footer">
+          &copy; 2026 Kyle Lemuel Lopez
+        </footer>
+      </div>
     </main>
   );
 };

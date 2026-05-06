@@ -18,6 +18,17 @@ const ContactMessageSchema = new Schema(
       required: true,
       trim: true,
     },
+    referenceNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    submittedAt: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
     status: {
       type: String,
       enum: ["pending", "sent", "failed"],

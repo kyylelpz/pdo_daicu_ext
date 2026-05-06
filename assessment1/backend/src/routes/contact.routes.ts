@@ -8,8 +8,62 @@ import {
   isValidEmail,
   validateContactInput,
 } from "../utils/contactValidation.util";
+import {
+  formatSubmittedAt,
+  generateReferenceNumber,
+} from "../utils/contactMetadata.util";
 
 const router = Router();
+const MAX_REFERENCE_NUMBER_ATTEMPTS = 3;
+
+type CreateContactMessageInput = {
+  name: string;
+  email: string;
+  message: string;
+  submittedAt: Date;
+};
+
+const isDuplicateKeyError = (error: unknown) =>
+  typeof error === "object" &&
+  error !== null &&
+  "code" in error &&
+  (error as { code?: number }).code === 11000;
+
+const createContactMessageWithReference = async ({
+  name,
+  email,
+  message,
+  submittedAt,
+}: CreateContactMessageInput) => {
+  for (let attempt = 1; attempt <= MAX_REFERENCE_NUMBER_ATTEMPTS; attempt += 1) {
+    const referenceNumber = generateReferenceNumber(submittedAt);
+
+    try {
+      const contactMessage = await ContactMessage.create({
+        name,
+        email,
+        message,
+        referenceNumber,
+        submittedAt,
+        status: "pending",
+      });
+
+      return {
+        contactMessage,
+        referenceNumber,
+      };
+    } catch (error) {
+      const canRetry =
+        isDuplicateKeyError(error) && attempt < MAX_REFERENCE_NUMBER_ATTEMPTS;
+
+      if (!canRetry) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Unable to generate a unique reference number.");
+};
 
 router.post("/", contactRateLimiter(), async (req, res) => {
   let contactMessageId: string | undefined;
@@ -27,16 +81,19 @@ router.post("/", contactRateLimiter(), async (req, res) => {
 
     const { name, email, message } = validation.data;
     const mailTo = process.env.MAIL_TO?.trim();
+    const submittedAt = new Date();
+    const submittedAtLabel = formatSubmittedAt(submittedAt);
 
     if (!mailTo || !isValidEmail(mailTo)) {
       throw new Error("MAIL_TO is missing or invalid in .env");
     }
 
-    const contactMessage = await ContactMessage.create({
+    const { contactMessage, referenceNumber } =
+      await createContactMessageWithReference({
       name,
       email,
       message,
-      status: "pending",
+      submittedAt,
     });
     contactMessageId = contactMessage._id.toString();
 
@@ -50,9 +107,18 @@ router.post("/", contactRateLimiter(), async (req, res) => {
       name,
       email,
       message,
+      referenceNumber,
+      submittedAt: submittedAtLabel,
+    });
+    const subject = renderTemplate(template.subject, {
+      name,
+      email,
+      message,
+      referenceNumber,
+      submittedAt: submittedAtLabel,
     });
 
-    await sendEmail(mailTo, template.subject, html);
+    await sendEmail(mailTo, subject, html);
 
     await ContactMessage.findByIdAndUpdate(contactMessage._id, {
       status: "sent",
@@ -93,15 +159,20 @@ router.get("/template-test", async (_req, res) => {
     });
   }
 
-  const htmlPreview = renderTemplate(template.html, {
+  const submittedAt = new Date();
+  const templateData = {
     name: "Kyle",
     email: "kyle@example.com",
     message: "Hello from template test",
-  });
+    referenceNumber: generateReferenceNumber(submittedAt),
+    submittedAt: formatSubmittedAt(submittedAt),
+  };
+  const htmlPreview = renderTemplate(template.html, templateData);
+  const subjectPreview = renderTemplate(template.subject, templateData);
 
   return res.json({
     success: true,
-    subject: template.subject,
+    subject: subjectPreview,
     htmlPreview,
   });
 });
