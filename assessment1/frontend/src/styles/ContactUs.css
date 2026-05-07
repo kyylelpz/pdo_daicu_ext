@@ -134,10 +134,16 @@
 }
 
 .feedback {
-  margin-top: 18px;
+  margin: 0;
   border-radius: 8px;
   padding: 12px 14px;
   font-weight: 700;
+}
+
+.feedback-list {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
 }
 
 .feedback-success {

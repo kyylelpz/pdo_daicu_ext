@@ -1,6 +1,7 @@
 import { Router } from "express";
 import ContactMessage from "../models/ContactMessage";
 import { sendEmail } from "../services/mail.service";
+import { verifyRecipientEmails } from "../services/emailVerification.service";
 import EmailTemplate from "../models/EmailTemplate";
 import { renderTemplate } from "../utils/template.util";
 import { contactRateLimiter } from "../middleware/rateLimit.middleware";
@@ -15,6 +16,16 @@ import {
 
 const router = Router();
 const MAX_REFERENCE_NUMBER_ATTEMPTS = 3;
+
+const formatInvalidRecipientsMessage = (
+  recipients: { email: string; reason: string }[]
+) => {
+  const recipientList = recipients
+    .map((recipient) => `${recipient.email} (${recipient.reason})`)
+    .join(", ");
+
+  return `The following recipient email address is invalid or unsafe to send: ${recipientList}.`;
+};
 
 type CreateContactMessageInput = {
   name: string;
@@ -95,6 +106,16 @@ router.post("/", contactRateLimiter(), async (req, res) => {
       throw new Error("MAIL_TO is missing or invalid in .env");
     }
 
+    const { validRecipients, invalidRecipients } =
+      await verifyRecipientEmails(mailRecipients);
+
+    if (validRecipients.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: formatInvalidRecipientsMessage(invalidRecipients),
+      });
+    }
+
     const { contactMessage, referenceNumber } =
       await createContactMessageWithReference({
       name,
@@ -125,7 +146,7 @@ router.post("/", contactRateLimiter(), async (req, res) => {
       submittedAt: submittedAtLabel,
     });
 
-    await sendEmail(mailRecipients.join(","), subject, html);
+    await sendEmail(validRecipients.join(","), subject, html);
 
     await ContactMessage.findByIdAndUpdate(contactMessage._id, {
       status: "sent",
@@ -137,6 +158,7 @@ router.post("/", contactRateLimiter(), async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Contact message saved and email sent successfully.",
+      invalidRecipients,
       data: updatedMessage,
     });
   } catch (error) {

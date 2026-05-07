@@ -10,6 +10,10 @@ export type ContactResponse = {
   success: boolean;
   message?: string;
   errors?: ContactFormErrors;
+  invalidRecipients?: {
+    email: string;
+    reason: string;
+  }[];
   data?: {
     referenceNumber?: string;
     submittedAt?: string;

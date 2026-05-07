@@ -7,6 +7,21 @@ import "../styles/ContactUs.css";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type FeedbackMessage = {
+  message: string;
+  type: "success" | "error";
+};
+
+const formatInvalidRecipientsMessage = (
+  recipients: { email: string; reason: string }[]
+) => {
+  const recipientList = recipients
+    .map((recipient) => `${recipient.email} (${recipient.reason})`)
+    .join(", ");
+
+  return `The following recipient email address is invalid or unsafe to send: ${recipientList}.`;
+};
+
 const validateForm = (form: ContactFormData): ContactFormErrors => {
   const errors: ContactFormErrors = {};
   const name = form.name.trim();
@@ -45,10 +60,7 @@ const ContactUs = () => {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ContactFormErrors>({});
-  const [feedback, setFeedback] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackMessage[]>([]);
 
   const currentErrors = validateForm(form);
   const isValid = Object.keys(currentErrors).length === 0;
@@ -64,7 +76,7 @@ const ContactUs = () => {
 
     setForm(nextForm);
     setErrors(validateForm(nextForm));
-    setFeedback(null);
+    setFeedback([]);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -74,15 +86,17 @@ const ContactUs = () => {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      setFeedback({
-        message: "Please correct the highlighted fields.",
-        type: "error",
-      });
+      setFeedback([
+        {
+          message: "Please correct the highlighted fields.",
+          type: "error",
+        },
+      ]);
       return;
     }
 
     setLoading(true);
-    setFeedback(null);
+    setFeedback([]);
 
     try {
       const data = await submitContactMessage({
@@ -92,10 +106,21 @@ const ContactUs = () => {
       });
 
       if (data.success) {
-        setFeedback({
-          message: "Message sent successfully.",
-          type: "success",
-        });
+        const nextFeedback: FeedbackMessage[] = [
+          {
+            message: "Message sent successfully.",
+            type: "success",
+          },
+        ];
+
+        if (data.invalidRecipients?.length) {
+          nextFeedback.push({
+            message: formatInvalidRecipientsMessage(data.invalidRecipients),
+            type: "error",
+          });
+        }
+
+        setFeedback(nextFeedback);
         setForm({
           name: "",
           email: "",
@@ -104,10 +129,12 @@ const ContactUs = () => {
         setErrors({});
       } else {
         setErrors(data.errors ?? {});
-        setFeedback({
-          message: data.message || "Failed to send message.",
-          type: "error",
-        });
+        setFeedback([
+          {
+            message: data.message || "Failed to send message.",
+            type: "error",
+          },
+        ]);
       }
     } catch (error) {
       console.error(error);
@@ -116,10 +143,12 @@ const ContactUs = () => {
       }).response : undefined;
 
       setErrors(response?.errors ?? {});
-      setFeedback({
-        message: response?.message || "Server error. Please try again.",
-        type: "error",
-      });
+      setFeedback([
+        {
+          message: response?.message || "Server error. Please try again.",
+          type: "error",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -144,10 +173,17 @@ const ContactUs = () => {
               onSubmit={handleSubmit}
             />
 
-            {feedback && (
-              <p className={`feedback feedback-${feedback.type}`} role="status">
-                {feedback.message}
-              </p>
+            {feedback.length > 0 && (
+              <div className="feedback-list" role="status">
+                {feedback.map((item) => (
+                  <p
+                    className={`feedback feedback-${item.type}`}
+                    key={`${item.type}-${item.message}`}
+                  >
+                    {item.message}
+                  </p>
+                ))}
+              </div>
             )}
           </div>
 
