@@ -51,6 +51,11 @@ const validateForm = (form: ContactFormData): ContactFormErrors => {
   return errors;
 };
 
+const validateField = (
+  form: ContactFormData,
+  field: keyof ContactFormData
+) => validateForm(form)[field];
+
 const ContactUs = () => {
   const [form, setForm] = useState<ContactFormData>({
     name: "",
@@ -73,9 +78,21 @@ const ContactUs = () => {
       ...form,
       [name]: value,
     };
+    const fieldName = name as keyof ContactFormData;
+    const fieldError = validateField(nextForm, fieldName);
 
     setForm(nextForm);
-    setErrors(validateForm(nextForm));
+    setErrors((currentErrors) => {
+      const nextErrors = { ...currentErrors };
+
+      if (fieldError) {
+        nextErrors[fieldName] = fieldError;
+      } else {
+        delete nextErrors[fieldName];
+      }
+
+      return nextErrors;
+    });
     setFeedback([]);
   };
 
