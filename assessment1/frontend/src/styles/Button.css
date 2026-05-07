@@ -20,12 +20,13 @@
 }
 
 .button:focus-visible {
-  outline: 3px solid rgba(102, 43, 44, 0.28);
+  outline: 3px solid rgba(102, 43, 44, 0.38);
   outline-offset: 3px;
 }
 
 .button:disabled {
-  background: #a89593;
+  background: #6f5f5d;
+  color: #ffffff;
   cursor: not-allowed;
   transform: none;
 }
